@@ -8,16 +8,17 @@ import MathNode from '../math/MathNode.js';
 
 class NormalNode extends Node {
 
-	static GEOMETRY = 'geometry';
-	static LOCAL = 'local';
-	static WORLD = 'world';
-	static VIEW = 'view';
-
 	constructor( scope = NormalNode.LOCAL ) {
 
 		super( 'vec3' );
 
 		this.scope = scope;
+
+	}
+
+	isGlobal() {
+
+		return true;
 
 	}
 
@@ -43,18 +44,18 @@ class NormalNode extends Node {
 
 		} else if ( scope === NormalNode.VIEW ) {
 
-			const vertexNormalNode = new OperatorNode( '*', new ModelNode( ModelNode.NORMAL_MATRIX ), new NormalNode( NormalNode.LOCAL ) );
-			outputNode = new MathNode( MathNode.NORMALIZE, new VaryingNode( vertexNormalNode ) );
+			const vertexNode = new OperatorNode( '*', new ModelNode( ModelNode.NORMAL_MATRIX ), new NormalNode( NormalNode.LOCAL ) );
+			outputNode = new MathNode( MathNode.NORMALIZE, new VaryingNode( vertexNode ) );
 
 		} else if ( scope === NormalNode.WORLD ) {
 
 			// To use INVERSE_TRANSFORM_DIRECTION only inverse the param order like this: MathNode( ..., Vector, Matrix );
-			const vertexNormalNode = new MathNode( MathNode.TRANSFORM_DIRECTION, new NormalNode( NormalNode.VIEW ), new CameraNode( CameraNode.VIEW_MATRIX ) );
-			outputNode = new MathNode( MathNode.NORMALIZE, new VaryingNode( vertexNormalNode ) );
+			const vertexNode = new MathNode( MathNode.TRANSFORM_DIRECTION, new NormalNode( NormalNode.VIEW ), new CameraNode( CameraNode.VIEW_MATRIX ) );
+			outputNode = new MathNode( MathNode.NORMALIZE, new VaryingNode( vertexNode ) );
 
 		}
 
-		return outputNode.build( builder );
+		return outputNode.build( builder, this.getNodeType( builder ) );
 
 	}
 
@@ -75,5 +76,10 @@ class NormalNode extends Node {
 	}
 
 }
+
+NormalNode.GEOMETRY = 'geometry';
+NormalNode.LOCAL = 'local';
+NormalNode.VIEW = 'view';
+NormalNode.WORLD = 'world';
 
 export default NormalNode;
